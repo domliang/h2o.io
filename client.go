@@ -53,7 +53,9 @@ func rdmID() string {
 func SendMessage(h *Hub, clientID string, message string) {
 	c, exists := h.clients[clientID]
 	if exists != false {
-		c.conn.WriteMessage(websocket.TextMessage, []byte(message))
+		if err := c.conn.WriteMessage(websocket.TextMessage, []byte(message)); err != nil {
+			log.Println("WriteMessage error", err)
+		}
 	}
 }
 
