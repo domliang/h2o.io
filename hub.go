@@ -1,5 +1,7 @@
 package h2oio
 
+import "time"
+
 // Hub 客户端hub
 type Hub struct {
 	// Registered clients.
@@ -19,10 +21,29 @@ type Hub struct {
 
 	//
 	messageHandler func(*Client, []byte)
+
+	// Time allowed to write a message to the peer.
+	writeWait time.Duration
+
+	// Time allowed to read the next pong message from the peer.
+	pongWait time.Duration
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriod time.Duration
+
+	// Maximum message size allowed from peer.
+	maxMessageSize int64
 }
 
 // NewHub buuild new hub
-func NewHub(registerHandler func(*Client), unRegisterHandler func(*Client), messageHandler func(*Client, []byte)) *Hub {
+func NewHub(
+	registerHandler func(*Client),
+	unRegisterHandler func(*Client),
+	messageHandler func(*Client, []byte),
+	writeWait time.Duration,
+	pongWait time.Duration,
+	pingPeriod time.Duration,
+	maxMessageSize int64) *Hub {
 	return &Hub{
 		register:          make(chan *Client),
 		unregister:        make(chan *Client),
@@ -30,6 +51,10 @@ func NewHub(registerHandler func(*Client), unRegisterHandler func(*Client), mess
 		registerHandler:   registerHandler,
 		messageHandler:    messageHandler,
 		unRegisterHandler: unRegisterHandler,
+		writeWait:         writeWait,
+		pongWait:          pongWait,
+		pingPeriod:        pingPeriod,
+		maxMessageSize:    maxMessageSize,
 	}
 }
 
